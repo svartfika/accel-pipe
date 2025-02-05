@@ -12,20 +12,51 @@ class Collector(ABC):
 
 
 class Phyphox(Collector):
-    phyphox_host = os.getenv("PHYPHOX_HOST")
-    phyphox_port = os.getenv("PHYPHOX_PORT")  # 49152-65535
-    phyphox_endpoint = f"http://{phyphox_host}:{phyphox_port}"
+    def __init__(
+        self,
+        host: str | None = None,
+        port: str | int | None = None,
+        source: str | None = None,
+        buffers: list[str] | None = None,
+    ):
+        self.phyphox_host = host or os.getenv("PHYPHOX_HOST")
+        if not self.phyphox_host:
+            raise ValueError("No host provided")
 
-    request_source = "linear_acceleration"
-    request_buffers = {"accX", "accY", "accZ"}
+        self.phyphox_port = port or os.getenv("PHYPHOX_PORT")
+        if not self.phyphox_port:
+            raise ValueError("No port provided")
 
-    experiment_config = requests.get(phyphox_endpoint + "/config").json()  # try-block here
+        self.phyphox_endpoint = f"http://{self.phyphox_host}:{self.phyphox_port}"
 
-    experiment_sources = {input.get("source") for input in experiment_config.get("inputs")}
-    if request_source not in experiment_sources:
-        raise ValueError(f"Requierd source '{request_source}' not found in experiment")
+        self.request_source = source or "linear_acceleration"
+        self.request_buffers = buffers or ["accX", "accY", "accZ"]
 
-    experiment_buffers = {buffer.get("name") for buffer in experiment_config.get("buffers")}
-    if not request_buffers <= experiment_buffers:
-        missing_buffers = request_buffers - experiment_buffers
-        raise KeyError(f"Required buffers not found in experiment buffers: {missing_buffers}")
+        self._check_endpoint()
+        self._validate_config()
+
+    def _check_endpoint(self) -> None:
+        try:
+            response = requests.head(self.phyphox_endpoint)
+            response.raise_for_status()
+        except (requests.RequestException, requests.Timeout):
+            raise ConnectionError("Service unavailable")
+
+    def _validate_config(self) -> None:
+        try:
+            response_config = requests.get(self.phyphox_endpoint + "/config").json()
+
+            experiment_sources = {input.get("source") for input in response_config.get("inputs")}
+            experiment_buffers = {buffer.get("name") for buffer in response_config.get("buffers")}
+
+            if self.request_source not in experiment_sources:
+                raise ValueError(f"Source not found: '{self.request_source}'")
+
+            if not set(self.request_buffers) <= experiment_buffers:
+                raise KeyError(f"Buffers not found: {self.request_buffers - experiment_buffers}")
+        except (requests.RequestException, requests.Timeout):
+            raise ConnectionError("Config inaccessible")
+
+
+if __name__ == "__main__":
+    Phyphox()
