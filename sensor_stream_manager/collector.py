@@ -7,6 +7,9 @@ import os
 
 load_dotenv()
 
+PHYPHOX_HOST = os.getenv("PHYPHOX_HOST")
+PHYPHOX_PORT = os.getenv("PHYPHOX_PORT")
+
 
 class Collector(ABC):
     def get_data(self) -> Generator[float | None]:
@@ -21,18 +24,18 @@ class Phyphox(Collector):
         source: str | None = None,
         buffers: list[str] | None = None,
     ):
-        self.phyphox_host = host or os.getenv("PHYPHOX_HOST")
+        self.phyphox_host: str = host or PHYPHOX_HOST
         if not self.phyphox_host:
             raise ValueError("No host provided")
 
-        self.phyphox_port = port or os.getenv("PHYPHOX_PORT")
+        self.phyphox_port: int | str = port or PHYPHOX_PORT
         if not self.phyphox_port:
             raise ValueError("No port provided")
 
-        self.phyphox_endpoint = f"http://{self.phyphox_host}:{self.phyphox_port}"
+        self.phyphox_endpoint: str = f"http://{self.phyphox_host}:{self.phyphox_port}"
 
-        self.request_source = source or "linear_acceleration"
-        self.request_buffers = buffers or ["accX", "accY", "accZ"]
+        self.request_source: str = source or "linear_acceleration"
+        self.request_buffers: list[str] = buffers or ["accX", "accY", "accZ"]
 
         self._check_endpoint()
         self._validate_config()
