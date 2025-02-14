@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from collections.abc import AsyncGenerator
 import requests
 
@@ -15,6 +15,14 @@ PHYPHOX_PORT = os.getenv("PHYPHOX_PORT")
 
 
 class Collector(ABC):
+    @abstractmethod
+    async def __aenter__(self):
+        pass
+
+    @abstractmethod
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     async def get_data(self) -> AsyncGenerator[float | None, None]:  # .asend() is not used therefore [.., None]
         raise NotImplementedError
 
@@ -43,8 +51,8 @@ class Phyphox(Collector):
 
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
-        self._check_endpoint()
-        self._validate_config()
+        await self._check_endpoint()
+        await self._validate_config()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
@@ -63,7 +71,7 @@ class Phyphox(Collector):
         try:
             async with self.session.get(self.phyphox_endpoint + "/config") as response_config:
                 response_config.raise_for_status()
-                json_config = response_config.json()
+                json_config = await response_config.json()
 
                 experiment_sources = {input.get("source") for input in json_config.get("inputs")}
                 experiment_buffers = {buffer.get("name") for buffer in json_config.get("buffers")}
