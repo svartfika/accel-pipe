@@ -72,10 +72,8 @@ class Phyphox(Collector):
             response_data.raise_for_status()
             json_data = response_data.json()
 
-            return (
-                next(iter(json_data.get("buffer", {}).get(buffer, {}).get("buffer", [])), None)
-                for buffer in self.request_buffers
-            )
+            for buffer in self.request_buffers:
+                yield next(iter(json_data.get("buffer", {}).get(buffer, {}).get("buffer", [])), None)
 
         except (requests.RequestException, requests.Timeout):
             raise ConnectionError("Service unavailable")
@@ -85,4 +83,5 @@ class Phyphox(Collector):
 
 
 if __name__ == "__main__":
-    Phyphox().get_data()
+    x, y, z = Phyphox().get_data()
+    print(x, y, z)
