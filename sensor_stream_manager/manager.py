@@ -30,18 +30,3 @@ class SensorStreamManager:
 
     def stop(self):
         self.running = False
-
-
-async def main():
-    async def demo_producer(data):
-        print(data)
-
-    stream = SensorStream()
-    phyphox = Phyphox()
-    stream.add_collector(phyphox)
-    stream.add_callback(demo_producer)
-    await stream.start()
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
