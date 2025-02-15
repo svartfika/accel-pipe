@@ -1,9 +1,10 @@
-from collector import Collector, Phyphox
 import asyncio
 from contextlib import AsyncExitStack
 
+from .collector import Collector
 
-class SensorStream:
+
+class SensorStreamManager:
     def __init__(self):
         self.collectors: list[Collector] = []
         self.callbacks: list[callable] = []
