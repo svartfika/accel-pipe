@@ -9,6 +9,7 @@ class SensorStreamManager:
         self.collectors: list[Collector] = []
         self.callbacks: list[callable] = []
         self.running = False
+        self.update_freq = 20
 
     def add_collector(self, collector: Collector):
         self.collectors.append(collector)
@@ -25,7 +26,7 @@ class SensorStreamManager:
                     data = [value async for value in collector.get_data()]
                 for callback in self.callbacks:
                     await callback(data)
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(1.0 / self.update_freq)
 
     def stop(self):
         self.running = False
