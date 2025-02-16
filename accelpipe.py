@@ -1,9 +1,10 @@
 import asyncio
 from sensor_stream_manager import SensorStreamManager, Phyphox
+from time import time_ns
 
 
-async def demo_producer(data):
-    print(data)
+async def demo_callback(data):
+    print({"timestamp": time_ns()} | data)
 
 
 async def main():
@@ -11,7 +12,7 @@ async def main():
     collector_phyphox = Phyphox()
 
     stream.add_collector(collector_phyphox)
-    stream.add_callback(demo_producer)
+    stream.add_callback(demo_callback)
 
     await stream.start()
 
