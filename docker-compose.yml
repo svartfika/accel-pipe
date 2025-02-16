@@ -1,0 +1,42 @@
+services:
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-local
+    ports:
+      - "9092:9092"
+    volumes:
+      - type: tmpfs
+        target: /var/lib/kafka/data
+        tmpfs:
+          size: 100m
+          mode: 0777
+    environment:
+      # Node/Cluster Identity
+      KAFKA_NODE_ID: 1
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+
+      # Networking/Listeners
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka-local:29092,CONTROLLER://kafka-local:29093,PLAINTEXT_HOST://0.0.0.0:9092'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka-local:29092,PLAINTEXT_HOST://localhost:9092'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+
+      # KRaft Controller Settings
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka-local:29093'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+
+      # Topic/Group Settings
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+      # Log Management
+      KAFKA_LOG_RETENTION_BYTES: 104857600    # Size-based retention
+      KAFKA_LOG_SEGMENT_BYTES: 10485760       # Segment size
+      KAFKA_LOG_RETENTION_MS: 300000          # Time-based retention
+      KAFKA_LOG_CLEANUP_POLICY: 'delete'      # Cleanup strategy
+
+      # Log Cleaner Settings
+      KAFKA_LOG_CLEANER_ENABLE: 'true'
+      KAFKA_LOG_CLEANER_MIN_CLEANABLE_RATIO: '0.5'
+      KAFKA_LOG_CLEANER_DELETE_RETENTION_MS: '60000'
