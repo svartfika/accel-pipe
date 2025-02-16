@@ -23,9 +23,14 @@ class SensorStreamManager:
             collectors = [await stack.enter_async_context(c) for c in self.collectors]
             while self.running:
                 for collector in collectors:
-                    data = [value async for value in collector.get_data()]
-                for callback in self.callbacks:
-                    await callback(data)
+                    data = dict(
+                        zip(
+                            ["x", "y", "z"],
+                            [value async for value in collector.get_data()],
+                        )
+                    )
+                    for callback in self.callbacks:
+                        await callback(data)
                 await asyncio.sleep(1.0 / self.update_freq)
 
     def stop(self):
