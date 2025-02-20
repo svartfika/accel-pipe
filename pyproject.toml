@@ -4,4 +4,12 @@ version = "0.1.0"
 description = "accelerometer sensor data pipeline"
 readme = "README.md"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = [
+    "quixstreams>=3.8.1",
+    "requests>=2.32.3",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "python-dotenv>=1.0.1",
+]
